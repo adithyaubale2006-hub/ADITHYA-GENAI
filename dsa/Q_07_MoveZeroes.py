@@ -1,3 +1,4 @@
+#Method 1
 def Move(nums):
     j = 0
     
