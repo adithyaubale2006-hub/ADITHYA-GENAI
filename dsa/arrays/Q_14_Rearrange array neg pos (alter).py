@@ -10,6 +10,27 @@ def Rearrange(nums):
             res[neg]= nums[i]
             neg+=2
     return res
+    
 
 nums= [4,5,7,-3,-2,-8]
 print(Rearrange(nums))
+
+
+"""
+        #BRUTE FORCE SOL
+        odd = []
+        even = []
+        for i in nums:
+            if i > 0:
+                odd.append(i)
+            else:
+                even.append(i)
+        
+        res = []
+
+        for i in range(len(odd)):
+            res.append(odd[i])
+            res.append(even[i])
+
+        return res
+"""
