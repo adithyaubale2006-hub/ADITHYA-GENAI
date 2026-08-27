@@ -5,7 +5,24 @@ classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnl
 
 def classify_text(text):
     # Define your categories
-    categories = ["Technology", "Sports", "Politics", "Entertainment", "Business"]
+    categories = [
+    "Technology",
+    "Education",
+    "Business",
+    "Finance",
+    "Health",
+    "Sports",
+    "Entertainment",
+    "Politics",
+    "Science",
+    "Travel",
+    "Food",
+    "Product Review",
+    "Customer Support",
+    "Job & Career",
+    "News",
+    "Other"
+]
     
     # Get the results from the model
     result = classifier(text, candidate_labels=categories)
