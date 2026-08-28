@@ -1,7 +1,6 @@
-# Gemini AI Chatbot
+# ASTER AI
 
-A simple AI chatbot built with Python and Google Gemini API.
-The chatbot can understand user messages and generate intelligent, conversational responses using Gemini's generative AI capabilities.
+A simple AI chatbot built with Python and Google Gemini API. ASTER AI can understand user messages and generate intelligent, conversational responses using Gemini's generative AI capabilities.
 
 ---
 
@@ -10,10 +9,10 @@ The chatbot can understand user messages and generate intelligent, conversationa
 * Interactive AI conversation
 * Powered by Google Gemini
 * Real-time response generation
-* API key stored securely using `.env`
+* Secure API key management using `.env`
 * Built with Python
-* Can be run locally from VS Code or terminal
-* Personalized greeting for the user
+* Runs locally using VS Code or terminal
+* Personalized AI responses
 
 ---
 
@@ -31,7 +30,7 @@ The chatbot can understand user messages and generate intelligent, conversationa
 ## Project Structure
 
 ```text
-Gemini-AiChatbot/
+ASTER-AI/
 │
 ├── chatbot.py
 ├── .env
@@ -47,13 +46,13 @@ Gemini-AiChatbot/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/Gemini-AiChatbot.git
+git clone https://github.com/YOUR-USERNAME/ASTER-AI.git
 ```
 
 ### 2. Navigate to the Project
 
 ```bash
-cd Gemini-AiChatbot
+cd ASTER-AI
 ```
 
 ### 3. Create a Virtual Environment
@@ -98,26 +97,26 @@ __pycache__/
 
 ---
 
-## Run the Chatbot
+## Run ASTER AI
 
-Start the application using:
+Start the chatbot using:
 
 ```bash
 python chatbot.py
 ```
 
-You can then type messages and interact with the Gemini AI.
+You can then type messages and interact with ASTER AI.
 
 Example:
 
 ```text
 You: Hello
 
-Gemini: Hello Adithya! How can I help you today?
+ASTER AI: Hello Adithya! How can I help you today?
 
 You: Explain artificial intelligence
 
-Gemini: Artificial intelligence is...
+ASTER AI: Artificial intelligence is...
 ```
 
 ---
@@ -131,6 +130,7 @@ Gemini: Artificial intelligence is...
                       |
                       v
              +-----------------+
+             |   ASTER AI      |
              | Python Chatbot  |
              +--------+--------+
                       |
@@ -161,7 +161,7 @@ Through this project, I learned:
 * How to use the Google GenAI Python SDK
 * How to manage API keys using environment variables
 * How to build an AI-powered application
-* How to create a basic conversational interface
+* How to create a conversational AI interface
 * How to structure and upload a Python AI project to GitHub
 
 ---
@@ -172,7 +172,7 @@ Through this project, I learned:
 * Web-based UI
 * Telegram AI chatbot
 * Voice input and output
-* PDF/document question answering
+* PDF and document question answering
 * RAG-based knowledge retrieval
 * Agentic AI capabilities
 * Cloud deployment
@@ -181,9 +181,9 @@ Through this project, I learned:
 
 ## Project Goal
 
-This project is part of my journey toward becoming a Generative AI Engineer.
+ASTER AI is part of my journey toward becoming a Generative AI Engineer.
 
-The chatbot serves as a foundation for building more advanced applications involving:
+The project provides a foundation for building more advanced AI applications involving:
 
 ```text
 LLMs
