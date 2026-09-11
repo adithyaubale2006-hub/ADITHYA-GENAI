@@ -1,0 +1,16 @@
+langchain
+langchain-community
+langchain-core
+langchain-text-splitters
+langchain-google-genai
+langchain-openai
+langchain-nvidia-ai-endpoints
+pypdf
+aiofiles
+fastapi
+uvicorn
+jinja2
+python-multipart
+PyPDF2
+faiss-cpu
+python-dotenv
