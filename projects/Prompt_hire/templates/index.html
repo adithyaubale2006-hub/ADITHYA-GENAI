@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Interview Question Creator — Turn any document into an interview brief</title>
+    <meta name="description" content="Upload a resume, syllabus, or article as a PDF and get a structured set of interview questions and answers pulled from it." />
+    <meta name="theme-color" content="#10141C" />
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2310141C'/%3E%3Cpath d='M9 7h10l4 4v14H9z' fill='%23F4EEE0'/%3E%3Cpath d='M19 7v4h4z' fill='%23C98A2E'/%3E%3Cpath d='M13 17.2c0-1.6 1.3-2.4 2.9-2.4 1.7 0 2.7.9 2.7 2 0 .9-.5 1.4-1.2 1.9-.7.5-1 .8-1 1.5' stroke='%2324314F' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='15.6' cy='23.4' r='0.9' fill='%2324314F'/%3E%3C/svg%3E" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --ink: #10141C;
+            --ink-soft: #1A2030;
+            --ink-line: #2B3348;
+            --paper: #F4EEE0;
+            --paper-line: #DED2AE;
+            --paper-text: #201C14;
+            --paper-muted: #7C7458;
+            --amber: #C98A2E;
+            --amber-deep: #A6701E;
+            --denim: #24314F;
+            --off-white: #EDEAE1;
+            --muted-on-ink: #8B93A6;
+            --brick: #B3432B;
+            --forest: #4A6B4F;
+            --serif: 'Source Serif 4', Georgia, serif;
+            --sans: 'Inter', -apple-system, sans-serif;
+            --mono: 'IBM Plex Mono', monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+        }
+
+        body {
+            margin: 0;
+            background: var(--ink);
+            color: var(--off-white);
+            font-family: var(--sans);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: inherit; }
+
+        :focus-visible {
+            outline: 2px solid var(--amber);
+            outline-offset: 2px;
+        }
+
+        /* ── Shell / header ───────────────────────────── */
+        .shell-header {
+            border-bottom: 1px solid var(--ink-line);
+            padding: 22px 28px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+        .brand-mark { width: 30px; height: 30px; flex-shrink: 0; }
+        .brand-name {
+            font-family: var(--serif);
+            font-weight: 600;
+            font-size: 1.05rem;
+            letter-spacing: 0.01em;
+        }
+
+        /* ── Hero ─────────────────────────────────────── */
+        .hero {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 64px 28px 40px;
+        }
+        .hero h1 {
+            font-family: var(--serif);
+            font-weight: 600;
+            font-size: clamp(2rem, 4vw, 2.9rem);
+            line-height: 1.15;
+            max-width: 16ch;
+            margin: 0 0 18px;
+            color: #fff;
+        }
+        .hero p {
+            color: var(--muted-on-ink);
+            font-size: 1.05rem;
+            max-width: 52ch;
+            margin: 0;
+        }
+
+        /* ── Intake panel (paper, dog-eared) ─────────── */
+        .intake-wrap { max-width: 1040px; margin: 0 auto; padding: 0 28px 56px; }
+        .intake {
+            position: relative;
+            background: var(--paper);
+            color: var(--paper-text);
+            border-radius: 3px 20px 3px 3px;
+            padding: 36px;
+            box-shadow: 0 24px 48px -24px rgba(0,0,0,0.55);
+        }
+        .intake::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 0 34px 34px 0;
+            border-color: transparent var(--ink) transparent transparent;
+        }
+        .intake::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 0 34px 34px 0;
+            border-color: transparent rgba(0,0,0,0.14) transparent transparent;
+            clip-path: polygon(100% 0, 100% 100%, 0 0);
+        }
+        .intake-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin: 0 0 4px;
+            color: var(--denim);
+        }
+        .intake-sub {
+            color: var(--paper-muted);
+            font-size: 0.9rem;
+            margin: 0 0 22px;
+        }
+
+        .dropzone {
+            border: 1.5px dashed var(--paper-line);
+            border-radius: 10px;
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            background: rgba(255,255,255,0.35);
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .dropzone.is-dragover {
+            border-color: var(--amber);
+            background: rgba(201,138,46,0.08);
+        }
+        .dropzone-icon { width: 34px; height: 34px; flex-shrink: 0; color: var(--denim); }
+        .dropzone-text { flex: 1 1 220px; min-width: 0; }
+        .dropzone-text strong { display: block; font-size: 0.95rem; }
+        .dropzone-text span { color: var(--paper-muted); font-size: 0.82rem; }
+        #pdf-file { display: none; }
+        .choose-btn {
+            border: 1px solid var(--denim);
+            background: transparent;
+            color: var(--denim);
+            font: inherit;
+            font-weight: 600;
+            font-size: 0.88rem;
+            padding: 9px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease;
+            white-space: nowrap;
+        }
+        .choose-btn:hover { background: var(--denim); color: var(--paper); }
+
+        .limits-readout {
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--paper-muted);
+            margin-top: 14px;
+        }
+
+        .file-error {
+            color: var(--brick);
+            font-size: 0.85rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .intake-actions { margin-top: 26px; display: flex; justify-content: flex-end; }
+        .btn-primary {
+            font: inherit;
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: var(--amber);
+            color: #1a1204;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 7px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            transition: background 0.15s ease, transform 0.1s ease;
+        }
+        .btn-primary:hover:not(:disabled) { background: var(--amber-deep); }
+        .btn-primary:active:not(:disabled) { transform: translateY(1px); }
+        .btn-primary:disabled { opacity: 0.55; cursor: default; }
+        .btn-primary svg { width: 17px; height: 17px; }
+
+        .spinner {
+            width: 15px; height: 15px;
+            border: 2px solid rgba(26,18,4,0.3);
+            border-top-color: #1a1204;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Exhibits (result) ───────────────────────── */
+        #result { display: none; max-width: 1040px; margin: 0 auto; padding: 0 28px 56px; }
+        .exhibits {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 760px) {
+            .exhibits { grid-template-columns: 1fr; }
+        }
+        .exhibit-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted-on-ink);
+            margin: 0 0 10px;
+        }
+        .exhibit-panel {
+            background: var(--ink-soft);
+            border: 1px solid var(--ink-line);
+            border-radius: 10px;
+            padding: 14px;
+            height: 100%;
+        }
+        #view-pdf {
+            width: 100%;
+            height: 460px;
+            border-radius: 6px;
+            border: 1px solid var(--ink-line);
+            display: block;
+        }
+        .brief-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 460px;
+            gap: 14px;
+        }
+        .brief-icon { width: 46px; height: 46px; color: var(--amber); }
+        .brief-panel p { color: var(--muted-on-ink); margin: 0; font-size: 0.92rem; }
+        .btn-secondary {
+            font: inherit;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: transparent;
+            color: var(--off-white);
+            border: 1px solid var(--ink-line);
+            padding: 10px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-secondary:hover { border-color: var(--amber); color: var(--amber); }
+        .btn-secondary svg { width: 15px; height: 15px; }
+
+        /* ── Follow-up (query) ───────────────────────── */
+        #query-section { display: none; max-width: 1040px; margin: 0 auto; padding: 0 28px 64px; }
+        .followup-panel {
+            background: var(--ink-soft);
+            border: 1px solid var(--ink-line);
+            border-radius: 10px;
+            padding: 22px;
+        }
+        .followup-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted-on-ink);
+            margin: 0 0 14px;
+        }
+        #chat-log { max-height: 240px; overflow-y: auto; margin-bottom: 14px; }
+        #chat-log:empty { display: none; }
+        .msg {
+            padding: 9px 13px;
+            border-radius: 7px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            max-width: 85%;
+        }
+        .msg.user { background: rgba(201,138,46,0.14); margin-left: auto; }
+        .msg.bot { background: var(--ink); border: 1px solid var(--ink-line); }
+
+        .followup-row { display: flex; gap: 10px; }
+        #query-input {
+            flex: 1;
+            font: inherit;
+            font-size: 0.95rem;
+            background: var(--ink);
+            border: 1px solid var(--ink-line);
+            color: var(--off-white);
+            padding: 11px 14px;
+            border-radius: 7px;
+        }
+        #query-input::placeholder { color: var(--muted-on-ink); }
+        #query-btn {
+            background: var(--amber);
+            border: none;
+            color: #1a1204;
+            width: 42px;
+            border-radius: 7px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #query-btn:hover:not(:disabled) { background: var(--amber-deep); }
+        #query-btn svg { width: 17px; height: 17px; }
+
+        footer {
+            border-top: 1px solid var(--ink-line);
+            padding: 22px 28px;
+            text-align: center;
+            color: var(--muted-on-ink);
+            font-size: 0.82rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="shell-header">
+        <div class="brand">
+            <svg class="brand-mark" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="6" fill="var(--ink-soft)" stroke="var(--ink-line)"/>
+                <path d="M9 7h10l4 4v14H9z" fill="var(--paper)"/>
+                <path d="M19 7v4h4z" fill="var(--amber)"/>
+                <path d="M13 17.2c0-1.6 1.3-2.4 2.9-2.4 1.7 0 2.7.9 2.7 2 0 .9-.5 1.4-1.2 1.9-.7.5-1 .8-1 1.5" stroke="var(--denim)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+                <circle cx="15.6" cy="23.4" r="0.9" fill="var(--denim)"/>
+            </svg>
+            <span class="brand-name">Interview Question Creator</span>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>Turn your document into a real interview brief</h1>
+        <p>Upload a resume, a syllabus, or an article as a PDF. We'll read it and prepare a set of questions and answers drawn straight from what's on the page.</p>
+    </section>
+
+    <section class="intake-wrap">
+        <div class="intake">
+            <p class="intake-label">Document intake</p>
+            <p class="intake-sub">Accepted format: PDF only</p>
+
+            <div class="dropzone" id="dropzone">
+                <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"/>
+                    <path d="M7 9l5-5 5 5"/>
+                    <path d="M12 4v12"/>
+                </svg>
+                <div class="dropzone-text">
+                    <strong id="file-name-display">No file chosen</strong>
+                    <span>Drop a PDF here, or choose one from your computer</span>
+                </div>
+                <label class="choose-btn" for="pdf-file">Choose file</label>
+                <input type="file" id="pdf-file" accept="application/pdf" />
+            </div>
+
+            <p class="limits-readout">Limit: {{ max_pages }} pages · {{ max_mb }}MB</p>
+            <p class="file-error" id="file-error"></p>
+
+            <div class="intake-actions">
+                <button type="button" id="upload-btn" class="btn-primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l4-4m-4 4l-4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+                    Prepare questions
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section id="result">
+        <div class="exhibits">
+            <div>
+                <p class="exhibit-label">Source document</p>
+                <div class="exhibit-panel">
+                    <embed id="view-pdf" src="" type="application/pdf" />
+                </div>
+            </div>
+            <div>
+                <p class="exhibit-label">Generated brief</p>
+                <div class="exhibit-panel brief-panel" id="brief-panel">
+                    <div id="loader">
+                        <svg class="brief-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 1.4s linear infinite;">
+                            <path d="M21 12a9 9 0 11-3-6.7"/>
+                        </svg>
+                        <p>Reading the document and drafting questions…</p>
+                    </div>
+                    <div id="download" style="display:none;">
+                        <svg class="brief-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                        <p>Your brief is ready.</p>
+                        <a href="" id="download-btn" class="btn-secondary" download>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l4-4m-4 4l-4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+                            Download brief
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="query-section">
+        <div class="followup-panel">
+            <p class="followup-label">Ask a follow-up about this document</p>
+            <div id="chat-log"></div>
+            <div class="followup-row">
+                <input type="text" id="query-input" placeholder="e.g. What are the key takeaways?" />
+                <button id="query-btn" aria-label="Send">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <footer>Interview Question Creator — built with FastAPI and PyPDF2.</footer>
+
+    <script>
+        const uploadBtn = document.getElementById('upload-btn');
+        const fileInput = document.getElementById('pdf-file');
+        const fileNameDisplay = document.getElementById('file-name-display');
+        const dropzone = document.getElementById('dropzone');
+        const fileError = document.getElementById('file-error');
+        const result = document.getElementById('result');
+        const loader = document.getElementById('loader');
+        const download = document.getElementById('download');
+        const viewPdf = document.getElementById('view-pdf');
+        const downloadBtn = document.getElementById('download-btn');
+        const querySection = document.getElementById('query-section');
+        const chatLog = document.getElementById('chat-log');
+        const queryInput = document.getElementById('query-input');
+        const queryBtn = document.getElementById('query-btn');
+
+        const MAX_MB = Number("{{ max_mb }}");
+
+        const swalTheme = {
+            background: '#1A2030',
+            color: '#EDEAE1',
+            confirmButtonColor: '#C98A2E'
+        };
+
+        function showFileError(msg) {
+            fileError.textContent = msg;
+            fileError.style.display = msg ? 'block' : 'none';
+        }
+
+        function validateFile(file) {
+            if (!file) return 'Please choose a PDF before generating questions.';
+            if (file.type !== 'application/pdf') return 'Only PDF files are supported.';
+            if (file.size > MAX_MB * 1024 * 1024) return `File is too large (max ${MAX_MB}MB).`;
+            return null;
+        }
+
+        function updateFileDisplay() {
+            const file = fileInput.files[0];
+            fileNameDisplay.textContent = file ? file.name : 'No file chosen';
+        }
+        fileInput.addEventListener('change', updateFileDisplay);
+
+        // Drag and drop
+        ['dragover', 'dragleave', 'drop'].forEach(evt => {
+            dropzone.addEventListener(evt, (e) => e.preventDefault());
+        });
+        dropzone.addEventListener('dragover', () => dropzone.classList.add('is-dragover'));
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('is-dragover'));
+        dropzone.addEventListener('drop', (e) => {
+            dropzone.classList.remove('is-dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                fileInput.files = e.dataTransfer.files;
+                updateFileDisplay();
+            }
+        });
+
+        async function extractErrorMessage(response, fallback) {
+            try {
+                const json = await response.json();
+                return json.detail || fallback;
+            } catch (err) {
+                return fallback;
+            }
+        }
+
+        uploadBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            const error = validateFile(file);
+            if (error) { showFileError(error); return; }
+            showFileError(null);
+
+            const formData = new FormData();
+            formData.append('pdf_file', file);
+            formData.append('filename', file.name);
+
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<span class="spinner"></span> Uploading…';
+
+            try {
+                const response = await fetch('/upload', { method: 'POST', body: formData });
+                await processUploadResponse(response);
+            } catch (err) {
+                Swal.fire({ ...swalTheme, icon: 'error', title: 'Upload failed', text: 'Unable to reach the server. Is it running?' });
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l4-4m-4 4l-4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg> Prepare questions';
+            }
+        });
+
+        async function processUploadResponse(response) {
+            if (response.status !== 200) {
+                const msg = await extractErrorMessage(response, 'Sorry, could not upload your PDF.');
+                Swal.fire({ ...swalTheme, icon: 'error', title: 'Upload failed', text: msg });
+                return;
+            }
+
+            const json = await response.json();
+            result.style.display = 'block';
+            loader.style.display = 'flex';
+            download.style.display = 'none';
+            viewPdf.setAttribute('src', json.pdf_filename);
+            result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            const formData = new FormData();
+            formData.append('pdf_filename', json.pdf_filename);
+
+            try {
+                const analyzeResponse = await fetch('/analyze', { method: 'POST', body: formData });
+                await processAnalyzeResponse(analyzeResponse);
+            } catch (err) {
+                Swal.fire({ ...swalTheme, icon: 'error', title: 'Could not finish', text: 'Unable to generate the brief.' });
+            }
+        }
+
+        async function processAnalyzeResponse(response) {
+            if (response.status !== 200) {
+                const msg = await extractErrorMessage(response, 'Sorry, could not analyze your PDF.');
+                Swal.fire({ ...swalTheme, icon: 'error', title: 'Could not finish', text: msg });
+                return;
+            }
+
+            const json = await response.json();
+            loader.style.display = 'none';
+            download.style.display = 'flex';
+            download.style.flexDirection = 'column';
+            download.style.alignItems = 'center';
+            download.style.gap = '14px';
+            downloadBtn.setAttribute('href', json.output_file);
+            downloadBtn.setAttribute('download', json.output_file.split('/').pop());
+            querySection.style.display = 'block';
+        }
+
+        function appendMessage(text, who) {
+            const div = document.createElement('div');
+            div.className = `msg ${who}`;
+            div.textContent = text;
+            chatLog.appendChild(div);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        async function sendQuery() {
+            const q = queryInput.value.trim();
+            if (!q) return;
+            appendMessage(q, 'user');
+            queryInput.value = '';
+            queryBtn.disabled = true;
+
+            try {
+                const res = await fetch('/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: q })
+                });
+                const json = await res.json();
+                appendMessage(json.response || 'No response received.', 'bot');
+            } catch (err) {
+                appendMessage('Something went wrong reaching the server.', 'bot');
+            } finally {
+                queryBtn.disabled = false;
+            }
+        }
+
+        queryBtn.addEventListener('click', sendQuery);
+        queryInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendQuery(); });
+    </script>
+</body>
+</html>
