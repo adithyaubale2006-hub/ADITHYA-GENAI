@@ -6,3 +6,7 @@ conda activate test
 
 ### **STREAMLIT**
 streamlit run app.py
+
+### **CREATE .env File**
+API_KEY = ""
+
