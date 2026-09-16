@@ -11,3 +11,8 @@ pip install -r requirements.txt
 
 ### RUN THE APP
 streamlit run app.py
+
+### CREATE A .env FILE FOR API_KEY
+GEMINI_API_KEY = "API_KEY"
+
+
