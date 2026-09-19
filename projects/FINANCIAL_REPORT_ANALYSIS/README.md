@@ -25,22 +25,12 @@ Financial Reports / Stock Data
 ```
 
 ```text
-06-financial-stock-analysis/
-│
-├── data/
-│   ├── financial_reports/
-│   └── stock_data/
-│
-├── src/
-│   ├── data_loader.py
-│   ├── indexer.py
-│   ├── retriever.py
-│   ├── financial_analyzer.py
-│   └── utils.py
-│
-├── app.py
-├── requirements.txt
-├── .env
-├── .gitignore
-└── README.md
+### HOW TO RUN
+
+1. conda create -n fine-env python=3.12 -y
+2. conda activate fine-env
+
+3. pip install -r requirements.txt
+4. test the .ipynb file
+5. streamlit run app.py
 ```
