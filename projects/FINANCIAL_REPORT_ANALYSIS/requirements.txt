@@ -1,0 +1,37 @@
+# LlamaIndex
+llama-index
+llama-index-llms-google-genai
+llama-index-embeddings-huggingface
+llama-index-vector-stores-chroma
+
+#Langchain
+langchain
+langchain-community
+langchain-google-genai
+langchain-huggingface
+langchain-chroma
+langchain-core
+langchain-classic
+
+# Vector Database
+chromadb
+
+# Financial Data
+yfinance
+pandas
+numpy
+
+# Document Processing
+pypdf
+
+# Environment Variables
+python-dotenv
+
+# UI
+streamlit
+
+# Machine Learning / Embeddings
+sentence-transformers
+
+# Visualization
+plotly
