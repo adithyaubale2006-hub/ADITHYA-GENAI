@@ -1,5 +1,6 @@
 ### ARCHITECTURE
 
+```text
 Financial Reports / Stock Data
           ↓
       Data Loading
@@ -21,8 +22,9 @@ Financial Reports / Stock Data
       Streamlit UI
 
 
-### FOLDER STURCTURE
+```
 
+```text
 06-financial-stock-analysis/
 │
 ├── data/
@@ -41,3 +43,4 @@ Financial Reports / Stock Data
 ├── .env
 ├── .gitignore
 └── README.md
+```
