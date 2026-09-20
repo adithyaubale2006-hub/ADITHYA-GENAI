@@ -1,0 +1,13 @@
+sentence-transformers #this is used to Take an Embedding Model from HF
+langchain
+flask
+pypdf
+python-dotenv
+pinecone[grpc]
+langchain-pinecone
+langchain-community
+langchain-classic
+langchain-core
+langchain-nvidia-ai-endpoints
+langchain-experimental
+-e .

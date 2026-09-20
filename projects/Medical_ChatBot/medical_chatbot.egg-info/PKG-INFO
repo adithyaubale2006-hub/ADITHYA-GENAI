@@ -1,0 +1,22 @@
+Metadata-Version: 2.4
+Name: medical-chatbot
+Version: 0.1.0
+Summary: Medical chatbot project
+Author: ADITHYA UBALE
+Author-email: adithyaubale2006@gmail.com
+Requires-Dist: sentence-transformers
+Requires-Dist: langchain
+Requires-Dist: flask
+Requires-Dist: pypdf
+Requires-Dist: python-dotenv
+Requires-Dist: pinecone[grpc]
+Requires-Dist: langchain-pinecone
+Requires-Dist: langchain-community
+Requires-Dist: langchain-classic
+Requires-Dist: langchain-core
+Requires-Dist: langchain-nvidia-ai-endpoints
+Requires-Dist: langchain-experimental
+Dynamic: author
+Dynamic: author-email
+Dynamic: requires-dist
+Dynamic: summary
