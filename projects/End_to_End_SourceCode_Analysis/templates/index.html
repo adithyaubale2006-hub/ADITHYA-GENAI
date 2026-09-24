@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Analysis Chatbot</title>
+
+    <!-- jQuery: DOM/AJAX helper (existing dependency). -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Prism.js: lightweight syntax highlighter for code blocks in AI
+         replies. Core + autoloader plugin only (~7KB gzipped combined) —
+         the autoloader fetches just the one language grammar file needed
+         per code block, on demand, instead of bundling every language. -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+    <style>
+        /* ==================================================================
+           FONT
+           ================================================================== */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        /* ==================================================================
+           DESIGN TOKENS — single source of truth for color/spacing/motion
+           ================================================================== */
+        :root {
+            --color-bg: #f4f5f9;
+            --color-surface: #ffffff;
+            --color-primary: #4f46e5;
+            --color-primary-dark: #4338ca;
+            --color-text: #1e293b;
+            --color-text-muted: #64748b;
+            --color-border: #e2e8f0;
+            --color-bubble-ai: #f1f5f9;
+            --color-error-bg: #fef2f2;
+            --color-error-border: #fecaca;
+            --color-error-text: #b91c1c;
+
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-full: 999px;
+
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 24px;
+
+            --shadow-card: 0 20px 48px -12px rgba(30, 41, 59, 0.16), 0 2px 8px rgba(30, 41, 59, 0.05);
+            --shadow-bubble: 0 1px 2px rgba(15, 23, 42, 0.06);
+            --shadow-btn: 0 4px 14px rgba(79, 70, 229, 0.35);
+
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --duration-fast: 150ms;
+            --duration-base: 250ms;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ==================================================================
+           TOP BAR
+           ================================================================== */
+        .app-header {
+            padding: var(--space-5) var(--space-3) var(--space-2);
+            text-align: center;
+        }
+
+        .logo-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            box-shadow: var(--shadow-btn);
+            margin-bottom: var(--space-3);
+        }
+
+        /* Explicit width/height on the SVG itself (not just the wrapper) so
+           it can never render at native/huge size before CSS applies. */
+        .logo-mark svg {
+            width: 22px;
+            height: 22px;
+            color: #ffffff;
+        }
+
+        .app-header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin: 0 0 var(--space-1);
+        }
+
+        .app-header p {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* ==================================================================
+           CHAT CARD (flex column so the footer can stick to the bottom
+           of the card without extra JS)
+           ================================================================== */
+        .chat-card {
+            width: 100%;
+            max-width: 800px;
+            height: 75vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--color-surface);
+            border: 1px solid rgba(226, 232, 240, 0.7);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            margin: 0 var(--space-3) var(--space-4);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, #4338ca, #4f46e5);
+            padding: var(--space-3) var(--space-4);
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            color: #ffffff;
+        }
+
+        .header-title h2 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+            animation: pulse-dot 2s infinite;
+            flex-shrink: 0;
+        }
+
+        #clear-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            font-size: 0.78rem;
+            font-family: inherit;
+            border-radius: var(--radius-full);
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: background var(--duration-fast) var(--ease-out);
+        }
+
+        #clear-btn:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        /* ==================================================================
+           CHAT BOX (scrollable message list — the only scrolling region)
+           ================================================================== */
+        .chat-box {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            background-color: var(--color-surface);
+            padding: var(--space-5) var(--space-4);
+            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-box::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-box::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: var(--radius-full);
+        }
+        .chat-box::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        /* ==================================================================
+           MESSAGE ROWS, AVATARS, BUBBLES
+           ================================================================== */
+        .message-row {
+            display: flex;
+            align-items: flex-end;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+            animation: message-in var(--duration-base) var(--ease-out) both;
+        }
+
+        .message-row.user {
+            justify-content: flex-end;
+        }
+
+        .message-row.ai {
+            justify-content: flex-start;
+        }
+
+        /* Fixed 32x32 avatars — width/height set on the element itself
+           (not just via a parent container) so they can never balloon in size
+           regardless of font-size or flex context. flex-shrink: 0 stops them
+           from being squeezed on narrow screens. */
+        .avatar {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            min-height: 32px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .avatar.ai {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+
+        .avatar.user {
+            background: linear-gradient(135deg, #64748b, #475569);
+        }
+
+        .message {
+            max-width: 72%;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            line-height: 1.55;
+            font-weight: 400;
+            box-shadow: var(--shadow-bubble);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.ai {
+            background-color: var(--color-bubble-ai);
+            color: var(--color-text);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.error {
+            background-color: var(--color-error-bg);
+            color: var(--color-error-text);
+            border: 1px solid var(--color-error-border);
+        }
+
+        /* ==================================================================
+           TYPING INDICATOR
+           ================================================================== */
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: var(--space-3) var(--space-4);
+            background-color: var(--color-bubble-ai);
+            border-radius: var(--radius-md);
+            border-bottom-left-radius: 4px;
+        }
+
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--color-text-muted);
+            animation: typing-bounce 1.1s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+
+        /* ==================================================================
+           STICKY INPUT AREA
+           ================================================================== */
+        .card-footer {
+            flex-shrink: 0;
+            background-color: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            padding: var(--space-3) var(--space-4);
+        }
+
+        #chat-form {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        #user-input {
+            flex: 1 1 auto;
+            font-family: inherit;
+            font-size: 0.95rem;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--color-border);
+            padding: 10px var(--space-4);
+            transition: border-color var(--duration-fast) var(--ease-out),
+                        box-shadow var(--duration-fast) var(--ease-out);
+        }
+
+        #user-input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+            outline: none;
+        }
+
+        #user-input:disabled {
+            background-color: #f8fafc;
+        }
+
+        #send-btn {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #ffffff;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            border: none;
+            padding: 10px var(--space-4);
+            cursor: pointer;
+            box-shadow: var(--shadow-btn);
+            transition: transform var(--duration-fast) var(--ease-out),
+                        box-shadow var(--duration-fast) var(--ease-out),
+                        opacity var(--duration-fast) var(--ease-out);
+        }
+
+        /* Explicit width/height on the icon SVG itself */
+        #send-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        #send-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
+        }
+
+        #send-btn:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+        }
+
+        #send-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* ==================================================================
+           CODE BLOCKS (IDE-style: dark panel, header bar, copy button)
+           A message bubble that contains one of these gets a wider max-width
+           via the .has-code modifier class, since code needs more room than
+           a sentence does.
+           ================================================================== */
+        .message.has-code {
+            max-width: 92%;
+        }
+
+        .code-block {
+            margin: var(--space-2) 0;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: #1e293b;
+            font-size: 0.85rem;
+        }
+
+        .code-block:first-child {
+            margin-top: 0;
+        }
+
+        .code-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .code-block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 12px;
+            background: #0f172a;
+            color: #94a3b8;
+            font-size: 0.7rem;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .code-copy-btn {
+            background: transparent;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            color: #cbd5e1;
+            border-radius: 6px;
+            padding: 2px 9px;
+            font-size: 0.68rem;
+            font-family: inherit;
+            text-transform: none;
+            letter-spacing: normal;
+            cursor: pointer;
+            transition: background var(--duration-fast) var(--ease-out),
+                        color var(--duration-fast) var(--ease-out),
+                        border-color var(--duration-fast) var(--ease-out);
+        }
+
+        .code-copy-btn:hover {
+            background: rgba(148, 163, 184, 0.15);
+            color: #ffffff;
+        }
+
+        .code-copy-btn.copied {
+            color: #4ade80;
+            border-color: #4ade80;
+        }
+
+        /* Prism sets its own background on <pre>; we override it to
+           transparent so our .code-block dark background shows through
+           uninterrupted behind the header bar too. */
+        .code-block pre[class*="language-"] {
+            margin: 0;
+            padding: var(--space-3) var(--space-4);
+            background: transparent !important;
+            overflow-x: auto;
+        }
+
+        .code-block code[class*="language-"] {
+            font-size: 0.85rem;
+            text-shadow: none;
+        }
+
+        /* Inline `code` spans (single backticks) within normal message text */
+        .message code:not([class*="language-"]) {
+            background: rgba(100, 116, 139, 0.15);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.85em;
+        }
+
+        /* Blinking cursor shown at the end of the AI bubble while its
+           answer is still streaming in - the classic "typing" cue. */
+        .stream-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: var(--color-text-muted);
+            margin-left: 2px;
+            vertical-align: text-bottom;
+            animation: cursor-blink 0.9s step-end infinite;
+        }
+
+        @keyframes cursor-blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* ==================================================================
+           KEYFRAME ANIMATIONS
+           ================================================================== */
+        @keyframes message-in {
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes typing-bounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-4px); opacity: 1; }
+        }
+
+        @keyframes pulse-dot {
+            0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5); }
+            70% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+
+        /* ==================================================================
+           RESPONSIVE
+           ================================================================== */
+        @media (max-width: 768px) {
+            .chat-card {
+                height: 80vh;
+                border-radius: var(--radius-md);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-header {
+                padding-top: var(--space-3);
+            }
+            .app-header h1 {
+                font-size: 1.15rem;
+            }
+            .chat-card {
+                height: 85vh;
+                margin: 0 var(--space-2) var(--space-3);
+            }
+            .message {
+                max-width: 85%;
+                font-size: 0.9rem;
+            }
+            #send-btn .btn-label {
+                display: none; /* icon-only send button on very small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-header">
+        <div class="logo-mark">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 9h8M8 13h5M21 12c0 4.418-4.03 8-9 8-1.06 0-2.077-.16-3.02-.457L3 20l1.5-4.5C3.55 14.14 3 13.1 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <h1>Source Code Analyzer AI</h1>
+        <p>Ask questions about your codebase and get answers grounded in your project's source.</p>
+    </div>
+
+    <div class="chat-card">
+        <div class="card-header">
+            <div class="header-title">
+                <span class="status-dot" title="Online"></span>
+                <h2>Chat</h2>
+            </div>
+            <button id="clear-btn" type="button" title="Clear the visible chat (does not affect the AI's memory)">
+                Clear chat
+            </button>
+        </div>
+
+        <!-- aria-live="polite" tells screen readers to announce new messages
+             as they arrive, without interrupting whatever the user is doing -->
+        <div class="chat-box" id="chat-box" aria-live="polite">
+            <div class="message-row ai">
+                <span class="avatar ai">AI</span>
+                <span class="message ai">Hello! Ask me anything about the codebase.</span>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <form id="chat-form" autocomplete="off">
+                <input
+                    type="text"
+                    id="user-input"
+                    name="msg"
+                    placeholder="E.g., What does the repo_ingestion function do?"
+                    aria-label="Type your question about the codebase"
+                    required
+                >
+                <button type="submit" id="send-btn">
+                    <span class="btn-label">Send</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor"
+                              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ======================================================================
+        // JS LOGIC — talks to the Flask backend, same escaping/loading/error
+        // handling as before. Sending a message now calls /stream (Server-
+        // Sent Events) instead of /get, and reveals the AI's answer token
+        // by token via fetch()'s ReadableStream, rather than waiting for one
+        // single JSON response. AI replies are still run through the same
+        // markdown-lite parser (renderMarkdownLite) for ```fenced code```
+        // and `inline code`, applied once streaming finishes. User messages
+        // and error messages are untouched — still plain escaped text.
+        // ======================================================================
+        $(document).ready(function () {
+
+            function escapeHtml(text) {
+                return $('<div>').text(text).html();
+            }
+
+            // Turns a small subset of Markdown - fenced ```lang code```
+            // blocks and `inline code` spans - into safe HTML. Everything
+            // that isn't inside backticks is still run through escapeHtml,
+            // so this never opens the door to raw HTML/script injection;
+            // it only ever produces <div>/<pre>/<code>/<button> tags that
+            // we construct ourselves, with the AI's text always inserted
+            // as escaped text content.
+            function renderMarkdownLite(text) {
+                const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)```/g;
+                let lastIndex = 0;
+                let match;
+                let html = "";
+                let containsCode = false;
+
+                while ((match = codeBlockRegex.exec(text)) !== null) {
+                    // Plain text before this code block
+                    html += renderInlineCode(text.slice(lastIndex, match.index));
+
+                    const lang = (match[1] || "plaintext").toLowerCase().replace(/[^a-z0-9]/g, "") || "plaintext";
+                    const code = match[2].replace(/\n$/, "");
+                    const escapedCode = escapeHtml(code);
+
+                    html += `<div class="code-block">
+                        <div class="code-block-header">
+                            <span>${escapeHtml(lang)}</span>
+                            <button type="button" class="code-copy-btn" data-code="${encodeURIComponent(code)}">Copy</button>
+                        </div>
+                        <pre class="language-${lang}"><code class="language-${lang}">${escapedCode}</code></pre>
+                    </div>`;
+
+                    containsCode = true;
+                    lastIndex = codeBlockRegex.lastIndex;
+                }
+
+                html += renderInlineCode(text.slice(lastIndex));
+
+                return { html, containsCode };
+            }
+
+            // Escapes a plain-text chunk, then turns `inline code` into
+            // <code> spans (safe: the backtick contents were already
+            // escaped as part of the whole chunk before this regex runs).
+            function renderInlineCode(textChunk) {
+                const escaped = escapeHtml(textChunk);
+                return escaped.replace(/`([^`\n]+)`/g, "<code>$1</code>");
+            }
+
+            function appendUserMessage(text) {
+                const safeText = escapeHtml(text);
+                $("#chat-box").append(
+                    `<div class="message-row user">
+                        <span class="message user">${safeText}</span>
+                        <span class="avatar user">You</span>
+                    </div>`
+                );
+            }
+
+            function appendAiMessage(text) {
+                const { html, containsCode } = renderMarkdownLite(text);
+                const messageClass = containsCode ? "message ai has-code" : "message ai";
+                const $row = $(
+                    `<div class="message-row ai">
+                        <span class="avatar ai">AI</span>
+                        <span class="${messageClass}">${html}</span>
+                    </div>`
+                );
+                $("#chat-box").append($row);
+
+                // Ask Prism to highlight any code blocks we just inserted.
+                // The autoloader plugin fetches the grammar file for
+                // whatever language was detected (python, js, bash, etc.)
+                // the first time it's needed, then highlights in place.
+                if (containsCode && window.Prism) {
+                    Prism.highlightAllUnder($row[0]);
+                }
+            }
+
+            function appendErrorMessage(text) {
+                const safeText = escapeHtml(text);
+                $("#chat-box").append(
+                    `<div class="message-row ai">
+                        <span class="avatar ai">AI</span>
+                        <span class="message error">${safeText}</span>
+                    </div>`
+                );
+            }
+
+            // --- Streaming-specific helpers -----------------------------
+            // While tokens are arriving we keep them as plain escaped text
+            // (no markdown/code parsing yet) because a code fence might not
+            // be "closed" until a later chunk arrives - trying to highlight
+            // a half-finished code block would just look broken. Once the
+            // stream signals it's done, startStreamingAiMessage's returned
+            // handle is used to run the *complete* text through the same
+            // renderMarkdownLite()+Prism pipeline as before.
+
+            function startStreamingAiMessage() {
+                const $row = $(
+                    `<div class="message-row ai">
+                        <span class="avatar ai">AI</span>
+                        <span class="message ai">
+                            <span class="stream-text"></span><span class="stream-cursor"></span>
+                        </span>
+                    </div>`
+                );
+                $("#chat-box").append($row);
+
+                let fullText = "";
+                const $textSpan = $row.find(".stream-text");
+                const $cursor = $row.find(".stream-cursor");
+                const $bubble = $row.find(".message");
+
+                return {
+                    appendToken(token) {
+                        fullText += token;
+                        // .text() (not .html()) - keeps this safe from HTML
+                        // injection the same way escapeHtml did before.
+                        $textSpan.text(fullText);
+                        scrollToBottom();
+                    },
+                    finish() {
+                        $cursor.remove();
+                        const { html, containsCode } = renderMarkdownLite(fullText);
+                        $bubble.html(html);
+                        if (containsCode) {
+                            $bubble.addClass("has-code");
+                            if (window.Prism) Prism.highlightAllUnder($row[0]);
+                        }
+                    },
+                    fail(errorText) {
+                        $cursor.remove();
+                        $bubble.removeClass("ai").addClass("error").text(errorText);
+                    },
+                    row: $row
+                };
+            }
+
+            function showTypingIndicator() {
+                $("#chat-box").append(
+                    `<div class="message-row ai" id="typing-row">
+                        <span class="avatar ai">AI</span>
+                        <span class="typing-indicator">
+                            <span></span><span></span><span></span>
+                        </span>
+                    </div>`
+                );
+                scrollToBottom();
+            }
+
+            function hideTypingIndicator() {
+                $("#typing-row").remove();
+            }
+
+            function scrollToBottom() {
+                $("#chat-box").scrollTop($("#chat-box")[0].scrollHeight);
+            }
+
+            function setFormBusy(isBusy) {
+                $("#user-input").prop("disabled", isBusy);
+                $("#send-btn").prop("disabled", isBusy);
+                $("#send-btn .btn-label").text(isBusy ? "Sending..." : "Send");
+            }
+
+            $("#chat-form").on("submit", function (event) {
+                event.preventDefault();
+
+                const userMsg = $("#user-input").val().trim();
+                if (!userMsg) return;
+
+                appendUserMessage(userMsg);
+                $("#user-input").val("");
+                scrollToBottom();
+
+                setFormBusy(true);
+                showTypingIndicator();
+
+                sendStreamingMessage(userMsg);
+            });
+
+            // Reading a streaming response body needs the native fetch API's
+            // ReadableStream - jQuery's $.ajax waits for the whole response
+            // and can't hand us partial chunks as they arrive, so this one
+            // call uses fetch() instead while everything else still uses
+            // jQuery as before.
+            function sendStreamingMessage(userMsg) {
+                let streamHandle = null;
+
+                fetch("/stream", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: "msg=" + encodeURIComponent(userMsg)
+                }).then(function (response) {
+                    if (!response.ok || !response.body) {
+                        throw new Error("Network response was not OK");
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = "";
+
+                    function readChunk() {
+                        return reader.read().then(function (result) {
+                            if (result.done) return;
+
+                            buffer += decoder.decode(result.value, { stream: true });
+
+                            // SSE events are separated by a blank line ("\n\n").
+                            // There may be zero, one, or several complete
+                            // events in the buffer at any point.
+                            const events = buffer.split("\n\n");
+                            buffer = events.pop(); // last part may be incomplete - keep it for next read
+
+                            events.forEach(function (rawEvent) {
+                                const line = rawEvent.trim();
+                                if (!line.startsWith("data:")) return;
+
+                                let payload;
+                                try {
+                                    payload = JSON.parse(line.slice(5).trim());
+                                } catch (e) {
+                                    return; // ignore any malformed line rather than crash the stream
+                                }
+
+                                if (payload.error) {
+                                    hideTypingIndicator();
+                                    appendErrorMessage(payload.error);
+                                } else if (payload.token) {
+                                    if (!streamHandle) {
+                                        hideTypingIndicator();
+                                        streamHandle = startStreamingAiMessage();
+                                    }
+                                    streamHandle.appendToken(payload.token);
+                                } else if (payload.done && streamHandle) {
+                                    streamHandle.finish();
+                                }
+                            });
+
+                            return readChunk();
+                        });
+                    }
+
+                    return readChunk();
+                }).catch(function () {
+                    hideTypingIndicator();
+                    if (streamHandle) {
+                        streamHandle.fail("Connection lost while receiving the response. Please try again.");
+                    } else {
+                        appendErrorMessage("Could not reach the server. Please check your connection and try again.");
+                    }
+                }).finally(function () {
+                    setFormBusy(false);
+                    scrollToBottom();
+                    $("#user-input").trigger("focus");
+                });
+            }
+
+            // Event delegation on #chat-box: code blocks (and their copy
+            // buttons) are added dynamically after page load, so we bind
+            // the handler to the always-present container instead of the
+            // buttons themselves.
+            $("#chat-box").on("click", ".code-copy-btn", function () {
+                const $btn = $(this);
+                const code = decodeURIComponent($btn.attr("data-code"));
+
+                navigator.clipboard.writeText(code).then(function () {
+                    const original = $btn.text();
+                    $btn.addClass("copied").text("Copied!");
+                    setTimeout(function () {
+                        $btn.removeClass("copied").text(original);
+                    }, 1500);
+                }).catch(function () {
+                    $btn.text("Press Ctrl+C");
+                    setTimeout(function () {
+                        $btn.text("Copy");
+                    }, 1500);
+                });
+            });
+
+            $("#clear-btn").on("click", function () {
+                // Visual-only reset — server-side ConversationSummaryMemory
+                // is untouched, since that's chain/memory logic, not UI.
+                $("#chat-box").empty();
+                appendAiMessage("Chat cleared. Ask me anything about the codebase.");
+            });
+        });
+    </script>
+</body>
+</html>

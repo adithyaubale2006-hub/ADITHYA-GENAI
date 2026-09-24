@@ -1,0 +1,57 @@
+# ==========================================
+# Custom Exclusions for your RAG Application
+# ==========================================
+# Ignore the local vector database folder to save space
+db/
+chroma_db/
+
+# Ignore the cloned repositories (we don't want to commit someone else's code to our repo)
+repo/
+research/test_repo/
+
+# VERY IMPORTANT: Ignore your environment variables file to protect your GEMINI_API_KEY
+.env
+
+# ==========================================
+# Standard Python Exclusions
+# ==========================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+env/
+.venv/
+.env/
+
+# Jupyter Notebooks (if you use them for testing)
+.ipynb_checkpoints
+
+# VS Code / IDE settings
+.vscode/
+.idea/
