@@ -209,4 +209,75 @@ This project is intended for educational and experimental use. Please ensure com
 
 This project was created for medical AI experimentation and educational demonstration purpose 
 
+## ☁️ AWS CI/CD Deployment Guide
+
+This project uses a fully automated Continuous Integration and Continuous Deployment (CI/CD) pipeline using GitHub Actions, Amazon ECR, and Amazon EC2. Follow these steps to set up the infrastructure.
+
+### Step 1: Create an IAM User
+1. Log in to your AWS Console and navigate to **IAM (Identity and Access Management)**.
+2. Click **Users** -> **Create user**.
+3. Name the user (e.g., `github-actions-user`).
+4. Attach the following permission policies directly:
+   - `AmazonEC2ContainerRegistryFullAccess`
+   - `AmazonEC2FullAccess`
+5. Create the user, go to the **Security credentials** tab, and generate an **Access Key** (Choose "Command Line Interface (CLI)"). 
+6. *Save the Access Key ID and Secret Access Key securely.* *DOWNLOAD*
+
+### Step 2: Create an ECR Repository
+1. Navigate to **Amazon ECR (Elastic Container Registry)**.
+2. Click **Create repository**.
+3. Keep it as **Private** and give it a name (e.g., `medi-bot-repo`).
+4. Click **Create**.
+5. *Save the URI of this repository (you will need just the repository name for GitHub Secrets).*
+
+### Step 3: Create an EC2 Instance
+1. Navigate to **Amazon EC2**.
+2. Click **Launch Instance**.
+3. Name it (e.g., `medi-bot-server`).
+4. Choose **Ubuntu** as the Amazon Machine Image (AMI).
+5. Choose an Instance Type (e.g., `t2.micro` for free tier, or `t2.medium` if the build requires more memory).
+6. Create and download a new Key Pair (`.pem` file) for SSH access.
+7. Under **Network settings**, check the boxes to **Allow HTTP traffic**, **Allow HTTPS traffic**, and **Allow SSH traffic**.
+8. (Important) Edit the Security Group to add a Custom TCP rule for **Port 8000** with source set to `0.0.0.0/0` (This allows users to access the Chainlit UI).
+9. Launch the instance.
+
+### Step 4: Install Docker on EC2
+1. SSH into your newly created EC2 instance using your terminal:
+   ```bash
+   ssh -i "your-key.pem" ubuntu@<your-ec2-public-ip>
+
+
+#### RUN THIS TO CONFIGURE DOCKER
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo apt-get install docker.io -y
+sudo usermod -aG docker ubuntu
+newgrp docker
+
+## 5. Setup GitHub Self-Hosted Runner on EC2:
+    - Go to your repository on GitHub.
+    - Navigate to Settings -> Actions -> Runners.
+    - Click "New self-hosted runner".
+    - Select Linux and x64.
+    - Copy the commands provided by GitHub one by one and run them inside your EC2 terminal.
+    - When prompted during configuration, press Enter to accept the default settings.
+    - Run the listener in the background:
+    
+    nohup ./run.sh &
+
+
+## 6. Configure GitHub Secrets:
+    Go to Settings -> Secrets and variables -> Actions -> New repository secret. Add the following:
+    - AWS_ACCESS_KEY_ID
+    - AWS_SECRET_ACCESS_KEY
+    - AWS_DEFAULT_REGION
+    - ECR_REPO
+    - GEMINI_API_KEY
+
+
+## 7. Deploy:
+    - Commit and push your code to the main branch.
+    - GitHub Actions will automatically build and deploy the app.
+    - Access the live app by visiting: http://<your-ec2-public-ip>:8000
+
 #### **ADITHYA UBALE**
