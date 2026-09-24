@@ -10,7 +10,7 @@ This project is a Generative AI-powered Source Code Analyzer built with Flask an
 - **Google Gemini API** (LLM)
 - **HuggingFace** (Embeddings)
 - **ChromaDB** (Vector Database)
-- **Bootstrap & jQuery** (Frontend UI)
+- **Bootstrap, AI & jQuery** (Frontend UI)
 
 ##  Project Structure
 
