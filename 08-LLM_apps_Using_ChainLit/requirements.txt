@@ -1,0 +1,5 @@
+chainlit
+langchain-google-genai
+google-generativeai
+python-dotenv
+-e .

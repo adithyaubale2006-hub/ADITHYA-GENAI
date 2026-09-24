@@ -1,0 +1,35 @@
+# ==========================================
+# Application Specific
+# ==========================================
+# VERY IMPORTANT: Ignore your environment variables file to protect your GEMINI_API_KEY
+.env
+
+# Ignore Chainlit's local configuration and cache folder
+.chainlit/
+
+# ==========================================
+# Standard Python Exclusions
+# ==========================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+.venv/
+.env/
+ChainlitDemo/
+
+# Jupyter Notebooks (if you use them for testing)
+.ipynb_checkpoints
+
+# VS Code / IDE settings
+.vscode/
+.idea/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
