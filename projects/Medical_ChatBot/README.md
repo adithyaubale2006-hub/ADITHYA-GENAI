@@ -207,4 +207,6 @@ This project is intended for educational and experimental use. Please ensure com
 
 ## Maintainer
 
-This project was created for medical AI experimentation and educational demonstration purposes.
+This project was created for medical AI experimentation and educational demonstration purpose 
+
+#### **ADITHYA UBALE**
