@@ -2,7 +2,7 @@
 
 This project is a Generative AI-powered Source Code Analyzer built with Flask and LangChain. It allows users to ingest a GitHub repository, convert the codebase into a vector database, and interact with an AI chatbot to ask questions, summarize functions, and understand the architecture of the code.
 
-## 🛠️ Tech Stack Used
+##  Tech Stack Used
 
 - **Python**
 - **LangChain**
@@ -12,7 +12,7 @@ This project is a Generative AI-powered Source Code Analyzer built with Flask an
 - **ChromaDB** (Vector Database)
 - **Bootstrap & jQuery** (Frontend UI)
 
-## 📁 Project Structure
+##  Project Structure
 
 ```text
 ├── app.py                # Main Flask application and API routing
