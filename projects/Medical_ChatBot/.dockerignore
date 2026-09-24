@@ -1,0 +1,27 @@
+# Protect API Keys
+.env
+
+# Ignore Git version control files
+.git
+.gitignore
+.github
+
+# Ignore Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore Virtual Environments
+venv/
+env/
+.venv/
+
+# Ignore Build artifacts and egg-info
+build/
+dist/
+*.egg-info/
+medical_chatbot.egg-info/
+Generative_AI_Project.egg-info/
+
+# Ignore local Jupyter Notebook checkpoints
+.ipynb_checkpoints/
