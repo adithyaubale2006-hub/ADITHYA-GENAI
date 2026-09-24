@@ -39,6 +39,9 @@ condata activate llm-app
 git clone <your-repository-url>
 cd <your-project-folder>
 
+### **RUN**
+python app.py
+
 #### **AUTHOR**
 ADITHYA UBALE
 
